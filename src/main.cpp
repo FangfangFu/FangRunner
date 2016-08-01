@@ -1,51 +1,42 @@
-// This program is about FangRunner getting points
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <random>
-#include <deque>
-#include <string>
-
-int main(int nNumberofArgs, char* args[])
+int main()
 {
-    
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode(1280, 960), "FangRunner window");
-    // Create a rectangle window to display
-    sf::RectangleShape rectangle(sf::Vector2f(1280, 960));
-    rectangle.setFillColor(sf::Color::Transparent);
-    rectangle.setOutlineThickness(-64);
-    rectangle.setOutlineColor(sf::Color::Blue);
-   
-    //Window loop
+    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
+    // Load a sprite to display
+    sf::Texture texture;
+    if (!texture.loadFromFile("../data/cute_image.jpg"))
+        return EXIT_FAILURE;
+    sf::Sprite sprite(texture);
+    // Create a graphical text to display
+    sf::Font font;
+    if (!font.loadFromFile("../data/arial.ttf"))
+        return EXIT_FAILURE;
+    sf::Text text("Hello SFML", font, 50);
+    // Load a music to play
+    sf::Music music;
+    if (!music.openFromFile("../data/nice_music.ogg"))
+        return EXIT_FAILURE;
+    // Play the music
+    music.play();
+    // Start the game loop
     while (window.isOpen())
     {
         // Process events
         sf::Event event;
         while (window.pollEvent(event))
         {
-            switch (event.type)
-            {
-                // window closed
-                case sf::Event::Closed:
-                    window.close();
-                    break;
-
-                // key pressed
-                case sf::Event::KeyPressed:
-                    break;
-
-                // we don't process other types of events
-                default:
-                    break;
-            }
+            // Close window: exit
+            if (event.type == sf::Event::Closed)
+                window.close();
         }
         // Clear screen
-        window.clear(sf::Color::White);
-        // Draw the rectangle
-        window.draw(rectangle);
+        window.clear();
+        // Draw the sprite
+        window.draw(sprite);
+        // Draw the string
+        window.draw(text);
         // Update the window
         window.display();
     }
