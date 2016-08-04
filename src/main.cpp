@@ -2,10 +2,13 @@
 #include <SFML/Graphics.hpp>
 #include "player.hpp"
 #include "world.hpp"
+#include "utility.hpp"
 
 const int ROW = 20;
-const int COLUMN = 100;
+const int COLUMN = 40;
 const Direction START_DIRECTION = Direction::NONE;
+const float START_POSITION_X = 5.0f;
+const float START_POSITION_Y = 10.0f;
 // 1 unit is 16 pixel; 80x45
 int main()
 {
@@ -22,7 +25,7 @@ int main()
     sf::RectangleShape squarePlayer(sf::Vector2f(32.0f, 32.0f));
     squarePlayer.setFillColor(sf::Color::Red);
     // Declare the world
-    World world(ROW, COLUMN, START_DIRECTION);
+    World world(ROW, COLUMN, START_DIRECTION, START_POSITION_X, START_POSITION_Y);
     sf::Clock clock;
 
     while (window.isOpen())
@@ -59,7 +62,7 @@ int main()
         auto worldMap = world.GetWorldMap();
         float x = world.GetPlayerX();
         float y = world.GetPlayerY();
-        squarePlayer.setPosition(x * 32.0f, y * 32.0f);
+        squarePlayer.setPosition(x * 32.0f, (23-y) * 32.0f);
 
         // Clear screen
         window.clear(sf::Color::White);
@@ -69,7 +72,7 @@ int main()
         for (int i = 0; i < 20; ++i){
             for(int n = 0; n < 40; ++n){
                 if(worldMap[i][n] == 1){
-                    squareGround.setPosition(n * 32, 23 * 32);
+                    squareGround.setPosition(n * 32.0f, 23 * 32.0f);
                     window.draw(squareGround);
                 }
             }
