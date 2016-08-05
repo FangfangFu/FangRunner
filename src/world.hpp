@@ -69,26 +69,20 @@ public:
         
         auto line = DrawLine(static_cast<int>(player.x), static_cast<int>(player.y), static_cast<int>(newX), static_cast<int>(newY));
         if(line.size() != 1){
-            for(auto& entry : line) {
-                if(worldVector[entry.second][entry.first] == 1){
-                    if (entry.second == static_cast<int>(player.y)){
-                        player.xSpeed = 0;
-                        startDirection = Direction::NONE;
-                        return;
-                    }else if(entry.first == static_cast<int>(player.x)){
+            for(int i = 0; i < line.size(); ++i) {
+                if(worldVector[line[i].second][line[i].first] == 1){
+                    player.x = static_cast<float>(line[i-1].first);
+                    player.y = static_cast<float>(line[i-1].second);
+                    if (worldVector[line[i-1].second + 1][line[i-1].first] == 1 or worldVector[line[i-1].second - 1][line[i-1].first] == 1 ){
                         player.ySpeed = 0;
-                        startDirection = Direction::NONE;
-                        return;
-                    }else {
-                        player.xSpeed = 0;
-                        player.ySpeed = 0;
-                        startDirection = Direction::NONE;
-                        return;
                     }
+                    if(worldVector[line[i-1].second][line[i-1].first + 1] == 1 or worldVector[line[i-1].second][line[i-1].first - 1] == 1){
+                        player.ySpeed = 0;
+                    }
+                    return;
                 }
             }
         }
-
         player.x = newX;
         player.y = newY;
 
