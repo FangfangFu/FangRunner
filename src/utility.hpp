@@ -5,51 +5,71 @@
 #include <vector>
 #include <utility>
 
-std::vector<std::pair<int,int>>  Line(float x1, float y1, float x2, float y2)
-{
-        // Bresenham's line algorithm
-  std::vector<std::pair<int,int>> result;
-  const bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
-  if(steep)
-  {
-    std::swap(x1, y1);
-    std::swap(x2, y2);
-  }
- 
-  if(x1 > x2)
-  {
-    std::swap(x1, x2);
-    std::swap(y1, y2);
-  }
- 
-  const float dx = x2 - x1;
-  const float dy = fabs(y2 - y1);
- 
-  float error = dx / 2.0f;
-  const int ystep = (y1 < y2) ? 1 : -1;
-  int y = (int)y1;
- 
-  const int maxX = (int)x2;
- 
-  for(int x=(int)x1; x<maxX; x++)
-  {
-    if(steep)
-    {
-        result.push_back(std::make_pair(y, x));
-    }
-    else
-    {
-        result.push_back(std::make_pair(x, y));
-    }
- 
-    error -= dy;
-    if(error < 0)
-    {
-        y += ystep;
-        error += dx;
-    }
-  }
-  return result;
+std::vector<std::pair<int, int>> DrawLine(int x1, int y1, int x2, int y2) {
+	std::vector<std::pair<int, int>> points;
+	bool issteep = std::abs(y2-y1) > std::abs(x2-x1);
+	if (issteep == true) {
+		int temp = x1;
+		x1 = y1;
+		y1 = temp;
+
+		temp = x2;
+		x2 = y2;
+		y2 = temp;
+	}
+
+	bool rev = false;
+	if (x1 > x2) {
+		int temp = x1;
+		x1 = x2;
+		x2 = temp;
+
+		temp = y1;
+		y1 = y2;
+		y2 = temp;
+		rev = true;
+	}
+		
+	int deltax = x2 - x1;
+	int deltay = std::abs(y2-y1);
+	int error = static_cast<int>(deltax / 2);
+	int y = y1;
+	int ystep;
+	if (y1 < y2) {
+		ystep = 1;
+	} else {
+		ystep = -1;
+	}    
+  
+	for (int x = x1; x <= x2; x++) {
+		if (issteep == true) {
+			points.push_back(std::pair<int, int>(y, x));
+		} else {
+			points.push_back(std::pair<int, int>(x, y));
+		}
+		error -= deltay;
+		if (error < 0) {
+			y += ystep;
+			error += deltax;
+		}
+	}
+
+	//Reverse the list if the coordinates were reversed
+	if (rev == true) {
+		std::reverse(points.begin(), points.end());
+	}
+		
+	return points;
 }
 
+/*bool LineCollision(std::vector<std::pair<int, int>>& line, std::vector<std::vector<int>>& collisionMap){
+  for(auto& entry : line) {
+    if(collisionMap[entry.second][entry.first] == 1){
+      return entry;
+    }else {
+      return false;
+    }
+  }
+
+}*/
 #endif //UTILITY_HPP

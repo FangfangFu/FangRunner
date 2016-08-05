@@ -38,67 +38,60 @@ public:
         mapHeight = static_cast<float>(row);
     }
     // Set up player direction function 
-    SetPlayerDirection(const Direction direction) {
+    void SetPlayerDirection(const Direction direction) {
         startDirection = direction;
     }
     // Update the world
-    UpdateWorld(int timeElapsed) {
+    void UpdateWorld(int timeElapsed) {
         if (startDirection == Direction::RIGHT) {
-            player.xSpeed += 200.0 * static_cast<float>(timeElapsed) / 1000.0;
-            /*newX += player.xSpeed * timeElapsed / 1000.0;
-            if (newX > mapWidth) {
-                player.xSpeed = 0;
-            }*/
+            player.xSpeed += 100.0 * static_cast<float>(timeElapsed) / 1000.0;
         }else if (startDirection == Direction::LEFT) {
-            player.xSpeed -= 200.0 * static_cast<float>(timeElapsed) / 1000.0;
-            /*newX += player.xSpeed * timeElapsed / 1000.0;
-            if (newX < 0) {
-                player.xSpeed = 0;
-            }*/
+            player.xSpeed -= 100.0 * static_cast<float>(timeElapsed) / 1000.0;
         }else if (startDirection == Direction::UP) {
-            player.ySpeed += 200.0 * static_cast<float>(timeElapsed) / 1000.0;
-            /*newY += player.ySpeed * timeElapsed / 1000.0;
-            if (newY > mapHeight) {
-                player.ySpeed = 0;
-            }*/
+            player.ySpeed += 100.0 * static_cast<float>(timeElapsed) / 1000.0;
         }else if (startDirection == Direction::DOWN) {
-            player.ySpeed -= 200.0 * static_cast<float>(timeElapsed) / 1000.0;
-            /*newY += player.ySpeed * timeElapsed / 1000.0;
-            if (newY < 0) {
-                player.ySpeed = 0;
-            }*/
-        } 
-        
-        newX += player.xSpeed * timeElapsed / 1000.0;
+            player.ySpeed -= 100.0 * static_cast<float>(timeElapsed) / 1000.0;
+        }
+
+        float moveLengthX = player.xSpeed * timeElapsed/1000.0;
+        newX += moveLengthX;
         if (newX < 0 or newX > mapWidth - 1){
+            newX -= moveLengthX;
             player.xSpeed = 0;
-        }else {
-            player.x = newX;
         }
-        newY += player.ySpeed * timeElapsed / 1000.0;
+
+        float moveLengthY = player.ySpeed * timeElapsed/1000.0;
+        newY += moveLengthY;
         if (newY < 0 or newY > mapHeight - 1 ){
+            newY -= moveLengthY;
             player.ySpeed = 0;
-        }else {
-            player.y = newY;
         }
-       /* auto lineVectorPair = Line(player.x, player.y, newX, newY);
-        int lineX = 0;
-        int lineY = 0;
-        for (int i = 0; i < lineVectorPair.size(); ++i){
-            lineX = lineVectorPair[i].first;
-            lineY = lineVectorPair[i].second;
-            if (worldVector[lineY][lineX] == 0){
-                player.x = newX;
-                player.y = newY;
-            }else{
-                if (worldVector[player.y][player.x + 1] == 1 or worldVector[player.y][player.x - 1] == 1 ){
-                    player.xSpeed = 0;
-                }
-                if (worldVector[player.y + 1][player.x] == 1 or worldVector[player.y - 1][player.x] == 1){
-                    player.ySpeed = 0;
+        
+        auto line = DrawLine(static_cast<int>(player.x), static_cast<int>(player.y), static_cast<int>(newX), static_cast<int>(newY));
+        if(line.size() != 1){
+            for(auto& entry : line) {
+                if(worldVector[entry.second][entry.first] == 1){
+                    if (entry.second == static_cast<int>(player.y)){
+                        player.xSpeed = 0;
+                        startDirection = Direction::NONE;
+                        return;
+                    }else if(entry.first == static_cast<int>(player.x)){
+                        player.ySpeed = 0;
+                        startDirection = Direction::NONE;
+                        return;
+                    }else {
+                        player.xSpeed = 0;
+                        player.ySpeed = 0;
+                        startDirection = Direction::NONE;
+                        return;
+                    }
                 }
             }
-        }*/
+        }
+
+        player.x = newX;
+        player.y = newY;
+
     }
     // Return a 2D world map
     const std::vector<std::vector<int>>& GetWorldMap(){
