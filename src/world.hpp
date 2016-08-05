@@ -60,33 +60,31 @@ public:
         newY += moveLengthY;
         
         auto line = DrawLine(static_cast<int>(player.x), static_cast<int>(player.y), static_cast<int>(newX), static_cast<int>(newY));
-        //if(line.size() != 1){
-            for(int i = 0; i < line.size(); ++i) {
-                if(line[i].first < 0 or line[i].first > mapWidth - 1 or line[i].second < 0 or line[i].second > mapHeight - 1 ){
-                    player.x = static_cast<float>(line[i-1].first);
-                    player.y = static_cast<float>(line[i-1].second);
-                    if (line[i].first < 0 or line[i].first > mapWidth - 1){
-                        player.xSpeed = 0;
-                    }
-                    if (line[i].second < 0 or line[i].second > mapHeight - 1){
-                        player.ySpeed = 0;
-                    }
-                    return;
+        for(int i = 0; i < line.size(); ++i) {
+            if(line[i].first < 0 or line[i].first > mapWidth - 1 or line[i].second < 0 or line[i].second > mapHeight - 1 ){
+                player.x = static_cast<float>(line[i-1].first);
+                player.y = static_cast<float>(line[i-1].second);
+                if (line[i].first < 0 or line[i].first > mapWidth - 1){
+                    player.xSpeed = 0;
                 }
-
-                if(worldVector[line[i].second][line[i].first] == 1){
-                    player.x = static_cast<float>(line[i-1].first);
-                    player.y = static_cast<float>(line[i-1].second);
-                    if (worldVector[line[i-1].second + 1][line[i-1].first] == 1 or worldVector[line[i-1].second - 1][line[i-1].first] == 1 ){
-                        player.ySpeed = 0;
-                    }
-                    if(worldVector[line[i-1].second][line[i-1].first + 1] == 1 or worldVector[line[i-1].second][line[i-1].first - 1] == 1){
-                        player.xSpeed = 0;
-                    }
-                    return;
+                if (line[i].second < 0 or line[i].second > mapHeight - 1){
+                    player.ySpeed = 0;
                 }
+                return;
             }
-        //}
+
+            if(worldVector[line[i].second][line[i].first] == 1){
+                player.x = static_cast<float>(line[i-1].first);
+                player.y = static_cast<float>(line[i-1].second);
+                if (worldVector[line[i-1].second + 1][line[i-1].first] == 1 or worldVector[line[i-1].second - 1][line[i-1].first] == 1 ){
+                    player.ySpeed = 0;
+                }
+                if(worldVector[line[i-1].second][line[i-1].first + 1] == 1 or worldVector[line[i-1].second][line[i-1].first - 1] == 1){
+                    player.xSpeed = 0;
+                }
+                return;
+            }
+        }
         player.x = newX;
         player.y = newY;
 
