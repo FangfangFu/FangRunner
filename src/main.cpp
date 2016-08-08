@@ -1,8 +1,6 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
-#include "player.hpp"
 #include "world.hpp"
-#include "utility.hpp"
 
 const int ROW = 20;
 const int COLUMN = 40;
@@ -39,6 +37,10 @@ int main()
                 case sf::Event::Closed:
                     window.close();
                     break;
+                case sf::Event::KeyPressed:
+                    if (event.key.code == sf::Keyboard::Z){
+                        world.JumpPlayer();
+                    }
                 // we don't process other types of events
                 default:
                     break;  
@@ -46,15 +48,19 @@ int main()
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
-            world.SetPlayerDirection(Direction::UP);
-        }else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
-            world.SetPlayerDirection(Direction::DOWN);
-        }else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-            world.SetPlayerDirection(Direction::LEFT);
-        }else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-            world.SetPlayerDirection(Direction::RIGHT);
-        }else {
-            world.SetPlayerDirection(Direction::NONE);
+            world.SetPlayerYDirection(Direction::UP);
+        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
+            world.SetPlayerYDirection(Direction::DOWN);
+        } else {
+            world.SetPlayerYDirection(Direction::NONE);
+        }
+        
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
+            world.SetPlayerXDirection(Direction::LEFT);
+        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
+            world.SetPlayerXDirection(Direction::RIGHT);
+        } else {
+            world.SetPlayerXDirection(Direction::NONE);
         }
 
         // Update the world for each loop

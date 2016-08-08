@@ -1,6 +1,7 @@
 # Directories
 .idea/
 include/SFML/
+include/Box2D/
 
 # Compiled Object files
 *.slo

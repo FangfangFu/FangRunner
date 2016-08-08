@@ -1,25 +1,64 @@
 #ifndef WORLD_HPP
 #define WORLD_HPP
 
+#include <Box2D/Box2D.h>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-#include "utility.hpp"
 
-class Player;
 // Enum class for direction types
 enum class Direction {NONE, UP, DOWN, LEFT, RIGHT};
+
+class MyQueryCallback : public b2QueryCallback {
+  public:
+      std::vector<b2Body*> foundBodies;
+      
+      bool ReportFixture(b2Fixture* fixture) {
+          foundBodies.push_back( fixture->GetBody() ); 
+          return true;//keep going to find all fixtures in the query area
+      }
+  };
 
 // A world map class
 class World {
 private:
     std::vector<std::vector<int>> worldVector;
-    Direction startDirection;
-    Player player;
-    float newX;
-    float newY;
+    Direction xDirection;
+    Direction yDirection;
     float mapWidth;
     float mapHeight;
+    bool playerJump;
+    
+    // Simulated Physics
+    b2World* world;
+    std::vector<b2Body*> blocks; // Might not need this
+    std::vector<b2Body*> players;
+    
+    /**
+     * Returns true if the player is touching the ground.
+     */
+    bool TouchingGround() {
+        int maxShapes = 10;
+        auto playerX = GetPlayerX();
+        auto playerY = GetPlayerY();
+        
+        b2AABB aabb;
+        aabb.upperBound = b2Vec2(playerX, playerY - 0.51f);
+        aabb.lowerBound = b2Vec2(playerX, playerY - 0.52f);
+        
+        MyQueryCallback queryCallback;
+        world->QueryAABB(&queryCallback, aabb);
+        
+        for (int i = 0; i < queryCallback.foundBodies.size(); i++) {
+            for (int j = 0; j < blocks.size(); ++j) {
+                if (queryCallback.foundBodies[i] == blocks[j]) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
     
 public:
     // Constuctor
@@ -29,65 +68,93 @@ public:
         for (int i = 0; i < column; ++i){
             worldVector[0][i] = 1;
         }
-        startDirection = direction;
-        player.x = playerX;
-        player.y = playerY;
-        newX = player.x;
-        newY = player.y;
+
         mapWidth = static_cast<float>(column);
         mapHeight = static_cast<float>(row);
+        playerJump = false;
+        
+        // Create physics world
+        b2Vec2 gravity(0.0f, -50.0f);
+        world = new b2World(gravity);
+        
+        // Create the ground from the provided worldVector map
+        for (int y = 0; y < mapHeight; ++y) {
+            for (int x = 0; x < mapWidth; ++x) {
+                if (worldVector[y][x] == 1) {
+                    // TODO: Instead of doing block by block, create one long block for each continous
+                    //       span of blocks. This will avoid the "bumpy" glitch when running
+                    b2BodyDef groundDefinition;
+                    groundDefinition.position.Set(static_cast<float>(x), static_cast<float>(y));
+                    b2Body* groundBody = world->CreateBody(&groundDefinition);
+                    
+                    // Define the shape (1m long, 1m tall for each block)
+                    b2PolygonShape groundBox;
+                    groundBox.SetAsBox(0.5f, 0.5f);
+                    groundBody->CreateFixture(&groundBox, 0.0f);
+                    blocks.push_back(groundBody);
+                }
+            }
+        }
+        
+        // Create player
+        b2BodyDef bodyDef;
+        bodyDef.type = b2_dynamicBody;
+        bodyDef.position.Set(5.0f, 5.0f);
+        b2Body* body = world->CreateBody(&bodyDef);
+        
+        b2PolygonShape dynamicBox;
+	    dynamicBox.SetAsBox(0.5f, 0.5f);
+        b2FixtureDef fixtureDef;
+	    fixtureDef.shape = &dynamicBox;
+        fixtureDef.density = 1.0f;
+        fixtureDef.friction = 2.9f;
+        body->CreateFixture(&fixtureDef);
+        
+        players.push_back(body);
     }
+    
     // Set up player direction function 
-    void SetPlayerDirection(const Direction direction) {
-        startDirection = direction;
+    void SetPlayerXDirection(const Direction direction) {
+        xDirection = direction;
     }
+    void SetPlayerYDirection(const Direction direction) {
+        // TODO: This might be useful if he had a jetpack haha
+        //yDirection = direction;
+    }
+    
+    void JumpPlayer() {
+        playerJump = true;
+    }
+    
     // Update the world
     void UpdateWorld(int timeElapsed) {
-        if (startDirection == Direction::RIGHT) {
-            player.xSpeed += 100.0 * static_cast<float>(timeElapsed) / 1000.0;
-        }else if (startDirection == Direction::LEFT) {
-            player.xSpeed -= 100.0 * static_cast<float>(timeElapsed) / 1000.0;
-        }else if (startDirection == Direction::UP) {
-            player.ySpeed += 100.0 * static_cast<float>(timeElapsed) / 1000.0;
-        }else if (startDirection == Direction::DOWN) {
-            player.ySpeed -= 100.0 * static_cast<float>(timeElapsed) / 1000.0;
+        float xForce = 0.0f;
+        float yForce = 0.0f;
+        if (xDirection == Direction::RIGHT) {
+            xForce += 10.0f;
+        } else if (xDirection == Direction::LEFT) {
+            xForce -= 10.0f;
         }
-
-        float moveLengthX = player.xSpeed * timeElapsed/1000.0;
-        newX += moveLengthX;
-
-        float moveLengthY = player.ySpeed * timeElapsed/1000.0;
-        newY += moveLengthY;
         
-        auto line = DrawLine(static_cast<int>(player.x), static_cast<int>(player.y), static_cast<int>(newX), static_cast<int>(newY));
-        for(int i = 0; i < line.size(); ++i) {
-            if(line[i].first < 0 or line[i].first > mapWidth - 1 or line[i].second < 0 or line[i].second > mapHeight - 1 ){
-                player.x = static_cast<float>(line[i-1].first);
-                player.y = static_cast<float>(line[i-1].second);
-                if (line[i].first < 0 or line[i].first > mapWidth - 1){
-                    player.xSpeed = 0;
-                }
-                if (line[i].second < 0 or line[i].second > mapHeight - 1){
-                    player.ySpeed = 0;
-                }
-                return;
-            }
-
-            if(worldVector[line[i].second][line[i].first] == 1){
-                player.x = static_cast<float>(line[i-1].first);
-                player.y = static_cast<float>(line[i-1].second);
-                if (worldVector[line[i-1].second + 1][line[i-1].first] == 1 or worldVector[line[i-1].second - 1][line[i-1].first] == 1 ){
-                    player.ySpeed = 0;
-                }
-                if(worldVector[line[i-1].second][line[i-1].first + 1] == 1 or worldVector[line[i-1].second][line[i-1].first - 1] == 1){
-                    player.xSpeed = 0;
-                }
-                return;
-            }
+        if (yDirection == Direction::UP) {
+            yForce += 10.0f;
+        } else if (yDirection == Direction::DOWN) {
+            yForce -= 10.0f;
         }
-        player.x = newX;
-        player.y = newY;
-
+        
+        auto force = b2Vec2(xForce*10.0f, yForce*10.0f);
+        auto playerCenterOfGravity = players[0]->GetWorldCenter();
+        players[0]->ApplyForce(force, playerCenterOfGravity, true);
+        
+        if (playerJump) {
+            // Only jump if on the ground
+            if (TouchingGround()) {
+                players[0]->ApplyLinearImpulse(b2Vec2(0.0f, 30.0f), playerCenterOfGravity, true);
+            }
+            playerJump = false;
+        }
+        
+        world->Step(static_cast<float>(timeElapsed)/1000.0f, 6, 2);
     }
     // Return a 2D world map
     const std::vector<std::vector<int>>& GetWorldMap(){
@@ -95,11 +162,18 @@ public:
     }
     // Return the player's x-position
     float GetPlayerX(){
-        return player.x;
+        return players[0]->GetPosition().x;
     }
     // Return the player's y-position
     float GetPlayerY(){
-        return player.y;
+        return players[0]->GetPosition().y;
+    }
+    
+    ~World() {
+        for(auto block : blocks) {
+            
+        }
+        delete world;
     }
 };
 
