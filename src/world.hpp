@@ -59,6 +59,11 @@ private:
         
         return false;
     }
+
+    /*void BuildBox(){
+        
+
+    }*/
     
 public:
     // Constuctor
@@ -66,7 +71,8 @@ public:
         // Initialize the 2D vector
         worldVector = std::vector<std::vector<int>>(row, std::vector<int>(column, 0) );
         for (int i = 0; i < column; ++i){
-            worldVector[0][i] = 1;
+            if (i != 7 and i != 8)
+                worldVector[0][i] = 1;
         }
 
         mapWidth = static_cast<float>(column);
@@ -78,7 +84,7 @@ public:
         world = new b2World(gravity);
         
         // Create the ground from the provided worldVector map
-        for (int y = 0; y < mapHeight; ++y) {
+        /*for (int y = 0; y < mapHeight; ++y) {
             for (int x = 0; x < mapWidth; ++x) {
                 if (worldVector[y][x] == 1) {
                     // TODO: Instead of doing block by block, create one long block for each continous
@@ -94,7 +100,66 @@ public:
                     blocks.push_back(groundBody);
                 }
             }
+        }*/
+
+        for (int y = 0; y < row; ++y) {
+            int count = 0;
+            bool emptyBlock = false;
+            int boxWidth = 0;
+            int boxX = 0;
+            int boxY = 0;
+
+            for (int x = 0; x < column; ++x) {
+                if (worldVector[y][x] == 1) {
+                    //  Instead of doing block by block, create one long block for each continous
+                    //       span of blocks. This will avoid the "bumpy" glitch when running
+                    ++count;
+                    
+                }else {
+                    emptyBlock = true;
+                    boxWidth = count;
+                    count = 0;
+                }
+
+                if(count == 1){
+                        boxX = x;
+                        boxY = y;
+                        emptyBlock = false;
+                }
+
+                if (emptyBlock == true and boxWidth != 0){
+                        b2BodyDef groundDefinition;
+                        std::cout << "boxX1:" << boxX << std::endl;
+                        std::cout << "boxY1:" << boxY << std::endl;
+                        groundDefinition.position.Set(static_cast<float>(boxX), static_cast<float>(boxY));
+                        b2Body* groundBody = world->CreateBody(&groundDefinition);
+                        // Define the shape (1m long, 1m tall for each block)
+                        
+                        b2PolygonShape groundBox;
+                        std::cout << "boxWidth1:" << boxWidth << std::endl;
+                        groundBox.SetAsBox(static_cast<float>(boxWidth)/2.0, 0.5f);
+                        groundBody->CreateFixture(&groundBox, 0.0f);
+                        blocks.push_back(groundBody);
+                }
+            }
+
+            if (count > 0){
+                boxWidth = count;
+                b2BodyDef groundDefinition;
+                std::cout << "boxX2:" << boxX << std::endl;
+                std::cout << "boxY2:" << boxY << std::endl;
+                groundDefinition.position.Set(static_cast<float>(boxX), static_cast<float>(boxY));
+                b2Body* groundBody = world->CreateBody(&groundDefinition);
+                // Define the shape (1m long, 1m tall for each block)
+                b2PolygonShape groundBox;
+                std::cout << "boxWidth2:" << boxWidth << std::endl;
+                groundBox.SetAsBox(static_cast<float>(boxWidth)/2.0, 0.5f);
+                groundBody->CreateFixture(&groundBox, 0.0f);
+                blocks.push_back(groundBody);
+            }
+
         }
+
         
         // Create player
         b2BodyDef bodyDef;
