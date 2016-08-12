@@ -80,6 +80,10 @@ public:
             if (i != 7 and i != 8)
                 worldVector[0][i] = 1;
         }
+        for (int i = 0; i < column; i += 10){
+            worldVector[1][i] = 1;
+            worldVector[2][i] = 1;
+        }
 
         mapWidth = static_cast<float>(column);
         mapHeight = static_cast<float>(row);
