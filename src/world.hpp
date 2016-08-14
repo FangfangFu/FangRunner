@@ -77,7 +77,7 @@ public:
         // Initialize the 2D vector
         worldVector = std::vector<std::vector<int>>(row, std::vector<int>(column, 0) );
         for (int i = 0; i < column; ++i){
-            if (i != 7 and i != 8)
+           // if (i != 7 and i != 8)
                 worldVector[0][i] = 1;
         }
         for (int i = 0; i < column; i += 10){
@@ -160,7 +160,7 @@ public:
     }
     
     // Update the world
-    void UpdateWorld(int timeElapsed) {
+    float UpdateWorld(int timeElapsed) {
         float xForce = 0.0f;
         float yForce = 0.0f;
         if (xDirection == Direction::RIGHT) {
@@ -187,7 +187,10 @@ public:
             playerJump = false;
         }
         
+        float oldX = GetPlayerX();
         world->Step(static_cast<float>(timeElapsed)/1000.0f, 6, 2);
+        float deltaX = GetPlayerX() - oldX;
+        return deltaX;
     }
     // Return a 2D world map
     const std::vector<std::vector<int>>& GetWorldMap(){

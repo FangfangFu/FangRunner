@@ -5,7 +5,7 @@
 const int ROW = 20;
 const int COLUMN = 400;
 const Direction START_DIRECTION = Direction::NONE;
-const float START_POSITION_X = 5.0f;
+const float START_POSITION_X = 10.0f;
 const float START_POSITION_Y = 10.0f;
 // 1 unit is 16 pixel; 80x45
 int main()
@@ -25,6 +25,8 @@ int main()
     // Declare the world
     World world(ROW, COLUMN, START_DIRECTION, START_POSITION_X, START_POSITION_Y);
     sf::Clock clock;
+
+    float lastX = START_POSITION_X;
 
     while (window.isOpen())
     {
@@ -64,18 +66,22 @@ int main()
         }
 
         // Update the world for each loop
-        world.UpdateWorld(clock.restart().asMilliseconds());
+        float deltaX = world.UpdateWorld(clock.restart().asMilliseconds());
         auto worldMap = world.GetWorldMap();
+        
+        //float x = world.GetPlayerX();
+        float x = lastX + deltaX;
         float originalX = world.GetPlayerX();
-        float x = world.GetPlayerX();
         float y = world.GetPlayerY();
 
         if (x < 10.0f) {
-            x += 10.0f - x + 10.0f;
+            x += 10 - x;
+        }else if (x > 30.0f) {
+            x -= x - 30;
+        }else if (x < 0){
+            x = 0;
         }
-        if (x > 30.0f) {
-            x -= x- 30.0f + 10.0f;
-        }
+        lastX = x;
         squarePlayer.setPosition(x * 32.0f, (23-y) * 32.0f);
         //float rangeLeft = x - 20.0f;
         // Clear screen
@@ -90,7 +96,6 @@ int main()
                     squareGroundX += x - originalX;
                     squareGround.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
                     window.draw(squareGround);
-                    
                 }
             }     
         }
