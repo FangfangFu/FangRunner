@@ -132,7 +132,7 @@ public:
         // Create player
         b2BodyDef bodyDef;
         bodyDef.type = b2_dynamicBody;
-        bodyDef.position.Set(5.0f, 5.0f);
+        bodyDef.position.Set(playerX, playerY);
         b2Body* body = world->CreateBody(&bodyDef);
         
         b2PolygonShape dynamicBox;
