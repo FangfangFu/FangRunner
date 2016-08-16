@@ -73,12 +73,54 @@ private:
         blocks.push_back(groundBody);
     }
     
+    // worldVector creater
+    std::vector<std::vector<int>> CreateWorld(const int startPlayerX, const int startPlayerY, const int width, const int height, const float holeRate, const int averageHoleWidth, const int holeWidthVariance, 
+    const float platformRate, const int averagePlatformWidth, const int platformWidthVariance, const int averagePlatformHeight, const int platformHeightVariance) {
+        std::vector<std::vector<int>> createdVector;
+        createdVector = std::vector<std::vector<int>>(height, std::vector<int>(width, 0) );
+        for (int i = 0; i < width; ++i){
+            createdVector[0][i] = 1;    
+        }
+        for (int i = startPlayerX - 2; i < startPlayerX + 3; ++i){
+            createdVector[startPlayerY - 2][i] = 1;
+        }
+        int holeNum = width * holeRate;
+        int holeRange = 1 / holeRate; 
+        
+        for (int n = 0; n < holeNum; ++n){
+            int holePosition = rand() % holeRange + (n * holeRange);
+            int actualHoleWidth = rand() % (2 * holeWidthVariance + 1) + (averageHoleWidth - holeWidthVariance);
+            for (int m = 0; m < actualHoleWidth; ++m){
+                createdVector[0][holePosition + m] = 0;
+            }      
+        }
+
+        int platformNum = width * platformRate;
+        int platformRange = 1 / platformRate;
+
+        for (int j = 0; j < platformNum; ++j){
+            if (j != 1){
+                int platformPosition = rand() % platformRange + (j * platformRange);
+                int actualPlatformWidth = rand() % (2 * platformWidthVariance + 1) + (averagePlatformWidth - holeWidthVariance);
+                int actualHeight = rand() % (2 * platformHeightVariance + 1) + (averagePlatformHeight - platformHeightVariance);
+                for (int m = 0; m < actualPlatformWidth; ++m){
+                    createdVector[actualHeight][platformPosition + m] = 1;
+                }
+            }
+        }
+        return createdVector;
+    }
+
 public:
     // Constuctor
     World(const int row, const int column, const Direction direction, const float playerX, const float playerY) {
+        // Set time seed for generate random numbers
+        srand(time(NULL));
         // Initialize the 2D vector
-        //Parameter: width, height, holeRate, averageHoleWidth, holeWidthVariance
-        worldVector = CreateWorld(column, row, 0.1, 3, 2);
+        // Parameter: startPlayerX, startPlayerY, width, height, 
+        // holeRate, averageHoleWidth, holeWidthVariance 
+        // platformRate, averageplatformWidth, platformWidthVariance, averagePlatformHeight, platformHeightVariance
+        worldVector = CreateWorld(static_cast<int>(playerX), static_cast<int>(playerY), column, row, 0.1, 3, 2, 0.1, 5, 3, 7, 4);
 
         mapWidth = static_cast<float>(column);
         mapHeight = static_cast<float>(row);
@@ -198,25 +240,6 @@ public:
     // Return the player's y-position
     float GetPlayerY(){
         return players[0]->GetPosition().y;
-    }
-    // worldVector creater
-    std::vector<std::vector<int>> CreateWorld(const int width, const int height, const float holeRate, const int averageHoleWidth, const int holeWidthVariance) {
-        std::vector<std::vector<int>> createdVector;
-        createdVector = std::vector<std::vector<int>>(height, std::vector<int>(width, 0) );
-        for (int i = 0; i < width; ++i){
-            createdVector[0][i] = 1;    
-        }
-        int holeNum = width * holeRate;
-        int holeRange = 1 / holeRate; 
-        srand(time(NULL));
-        for (int n = 0; n < holeNum; ++n){
-            int holePosition = rand() % holeRange + (n * holeRange);
-            int actualHoleWidth = rand() % (2 * holeWidthVariance) + (averageHoleWidth - holeWidthVariance);
-            for (int m = 0; m < actualHoleWidth; ++m){
-                createdVector[0][holePosition + m] = 0;
-            }      
-        }
-        return createdVector;
     }
 
     ~World() {
