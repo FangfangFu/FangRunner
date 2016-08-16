@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <random>
+#include <ctime>
 
 // Enum class for direction types
 enum class Direction {NONE, UP, DOWN, LEFT, RIGHT};
@@ -75,15 +77,8 @@ public:
     // Constuctor
     World(const int row, const int column, const Direction direction, const float playerX, const float playerY) {
         // Initialize the 2D vector
-        worldVector = std::vector<std::vector<int>>(row, std::vector<int>(column, 0) );
-        for (int i = 0; i < column; ++i){
-           // if (i != 7 and i != 8)
-                worldVector[0][i] = 1;
-        }
-        for (int i = 0; i < column; i += 10){
-            worldVector[1][i] = 1;
-            worldVector[2][i] = 1;
-        }
+        //Parameter: width, height, holeRate, averageHoleWidth, holeWidthVariance
+        worldVector = CreateWorld(column, row, 0.1, 3, 2);
 
         mapWidth = static_cast<float>(column);
         mapHeight = static_cast<float>(row);
@@ -204,7 +199,26 @@ public:
     float GetPlayerY(){
         return players[0]->GetPosition().y;
     }
-    
+    // worldVector creater
+    std::vector<std::vector<int>> CreateWorld(const int width, const int height, const float holeRate, const int averageHoleWidth, const int holeWidthVariance) {
+        std::vector<std::vector<int>> createdVector;
+        createdVector = std::vector<std::vector<int>>(height, std::vector<int>(width, 0) );
+        for (int i = 0; i < width; ++i){
+            createdVector[0][i] = 1;    
+        }
+        int holeNum = width * holeRate;
+        int holeRange = 1 / holeRate; 
+        srand(time(NULL));
+        for (int n = 0; n < holeNum; ++n){
+            int holePosition = rand() % holeRange + (n * holeRange);
+            int actualHoleWidth = rand() % (2 * holeWidthVariance) + (averageHoleWidth - holeWidthVariance);
+            for (int m = 0; m < actualHoleWidth; ++m){
+                createdVector[0][holePosition + m] = 0;
+            }      
+        }
+        return createdVector;
+    }
+
     ~World() {
         for(auto block : blocks) {
             
