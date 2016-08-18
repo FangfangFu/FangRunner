@@ -24,23 +24,85 @@ int main()
     // Create a rectangle window to display
     sf::RectangleShape rectangle(sf::Vector2f(1280, 768));
     rectangle.setFillColor(sf::Color::Transparent);
-    // Create a green square to build ground
-    sf::RectangleShape squareGround(sf::Vector2f(32.0f, 32.0f));
-    squareGround.setFillColor(sf::Color::Green);
-    // Create a red square player
-    sf::RectangleShape squarePlayer(sf::Vector2f(32.0f, 32.0f));
-    squarePlayer.setFillColor(sf::Color::Red);
-    // // Create a graphical text to display
-    sf::Font font;
-    if (!font.loadFromFile("../data/arial.ttf"))
+    // Load a music to play
+    sf::Music music;
+    if (!music.openFromFile("../data/nice_music.ogg"))
         return EXIT_FAILURE;
+    // Play the music
+    music.play();
+    // Create a pig player
+    sf::Texture playerTexture;
+    if (!playerTexture.loadFromFile("../data/pig.png")){
+        return EXIT_FAILURE;
+    } 
+    sf::Sprite pigPlayerRight(playerTexture);
+    pigPlayerRight.setScale(0.057658f, 0.085333f);
+    pigPlayerRight.setOrigin(16.0f, 16.0f);
+    sf::Sprite pigPlayerLeft(playerTexture);
+    pigPlayerLeft.setScale(0.057658f, 0.085333f);
+    pigPlayerLeft.scale(-1.0f,1.0f);
+    // Create a graphical text to display
+    sf::Font font;
+    if (!font.loadFromFile("../data/arial.ttf")){
+        return EXIT_FAILURE;
+    }  
     sf::Text text("Starting World " + std::to_string(level), font, 50);
     text.setColor(sf::Color::Magenta);
     text.setPosition(500.0f, 128.0f);
     sf::Text wonText("You won!", font, 70);
     wonText.setColor(sf::Color::Magenta);
     wonText.setPosition(500.0f, 200.0f);
+    // Create a background
+    sf::Texture backgroundTexture;
+    if (!backgroundTexture.loadFromFile("../data/background.png")){
+        return EXIT_FAILURE;
+    } 
+    sf::Sprite background(backgroundTexture);
+    background.setScale(0.38f, 0.32f);
 
+    // Create the floor
+    sf::Texture floorMiddleTexture;
+    if (!floorMiddleTexture.loadFromFile("../data/middle.png")){
+        return EXIT_FAILURE;
+    } 
+    sf::Sprite floorMiddle(floorMiddleTexture);
+    floorMiddle.setScale(0.125f, 0.2162f);
+    // Create the floor left corner
+    sf::Texture floorLeftTexture;
+    if (!floorLeftTexture.loadFromFile("../data/floor_left_corner.png")){
+        return EXIT_FAILURE;
+    } 
+    sf::Sprite floorLeft(floorLeftTexture);
+    floorLeft.setScale(0.1839f, 0.2162f);
+    // Create the floor right corner
+    sf::Texture floorRightTexture;
+    if (!floorRightTexture.loadFromFile("../data/floor_right_corner.png")){
+        return EXIT_FAILURE;
+    } 
+    sf::Sprite floorRight(floorRightTexture);
+    floorRight.setScale(0.1839f, 0.2162f);
+
+    // Create the platform
+    sf::Texture platformMiddleTexture;
+    if (!platformMiddleTexture.loadFromFile("../data/middle_edge.png")){
+        return EXIT_FAILURE;
+    } 
+    sf::Sprite platformMiddle(platformMiddleTexture);
+    platformMiddle.setScale(0.125f, 0.2162f);
+    // Create the floor left corner
+    sf::Texture platformLeftTexture;
+    if (!platformLeftTexture.loadFromFile("../data/left_edge.png")){
+        return EXIT_FAILURE;
+    } 
+    sf::Sprite platformLeft(platformLeftTexture);
+    platformLeft.setScale(0.1839f, 0.2162f);
+    // Create the floor right corner
+    sf::Texture platformRightTexture;
+    if (!platformRightTexture.loadFromFile("../data/right_edge.png")){
+        return EXIT_FAILURE;
+    } 
+    sf::Sprite platformRight(platformRightTexture);
+    platformRight.setScale(0.1839f, 0.2162f);
     // Declare the world
     World world(ROW, COLUMN, START_DIRECTION, START_POSITION_X, START_POSITION_Y, MAX_LEVEL);
     sf::Clock clock;
@@ -79,14 +141,17 @@ int main()
         
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
             world.SetPlayerXDirection(Direction::LEFT);
+            //pigPlayer.setTextureRect(sf::IntRect(32.0f, 0, -32.0f, 32.0f));
         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
             world.SetPlayerXDirection(Direction::RIGHT);
+            //pigPlayer.scale(-1.0f, 1.0f);
         } else {
             world.SetPlayerXDirection(Direction::NONE);
         }
 
         // Update the world for each loop
         float deltaX = world.UpdateWorld(clock.restart().asMilliseconds());
+        
         timeElapsed += time.restart().asMilliseconds();
         // Update world level
         if (world.GetPlayerX() >= COLUMN){
@@ -125,26 +190,37 @@ int main()
             x = 0;
         }
         lastX = x;
-        squarePlayer.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
+        
         
         // Clear screen
         window.clear(sf::Color::White);
+        // Draw background
+        window.draw(background);
         // Draw the rectangle
         window.draw(rectangle);
         // Draw the map
         for (int i = 0; i < 20; ++i){
             for (int n = 0; n < 400; ++n){
                 float squareGroundX = n;
-                if(worldMap[i][n] == 1){
-                    squareGroundX += x - originalX;
-                    if (squareGroundX > -1.0f and squareGroundX < 40.0f){
-                        squareGround.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
-                        window.draw(squareGround);
+                squareGroundX += x - originalX;
+                if (squareGroundX > -1.0f and squareGroundX < 40.0f){
+                    if(worldMap[i][n] == 1){
+                        floorMiddle.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
+                        window.draw(floorMiddle);
+                    } else if(worldMap[i][n] == 2){
+                        platformMiddle.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
+                        window.draw(platformMiddle);
                     }
                 }
             }     
         }
-        window.draw(squarePlayer);
+        if (world.GetDirectionX() == Direction::LEFT){
+            pigPlayerLeft.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
+            window.draw(pigPlayerLeft);
+        } else {
+            pigPlayerRight.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
+            window.draw(pigPlayerRight);
+        }
         // Draw the string
         if (timeElapsed <= 3000.0f){
             window.draw(text);

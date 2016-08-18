@@ -84,7 +84,7 @@ private:
             int boxX = 0;
             int boxY = 0;
             for (int x = 0; x < column; ++x) {
-                if (worldVector[y][x] == 1) {
+                if (worldVector[y][x] == 1 or worldVector[y][x] == 2) {
                     ++count;
                     
                 }else {
@@ -137,7 +137,7 @@ private:
             createdVector[0][i] = 1;    
         }
         for (int i = startPlayerX - 2; i < startPlayerX + 3; ++i){
-            createdVector[startPlayerY - 2][i] = 1;
+            createdVector[startPlayerY - 2][i] = 2;
         }
         int holeNum = width * holeRate;
         int holeRange = 1 / holeRate; 
@@ -159,7 +159,7 @@ private:
                 int actualPlatformWidth = rand() % (2 * platformWidthVariance + 1) + (averagePlatformWidth - holeWidthVariance);
                 int actualHeight = rand() % (2 * platformHeightVariance + 1) + (averagePlatformHeight - platformHeightVariance);
                 for (int m = 0; m < actualPlatformWidth; ++m){
-                    createdVector[actualHeight][platformPosition + m] = 1;
+                    createdVector[actualHeight][platformPosition + m] = 2;
                 }
             }
         }
@@ -178,7 +178,7 @@ public:
         // platformRate, averagePlatformWidth, platformWidthVariance, averagePlatformHeight, platformHeightVariance
         float holeRate = 0.1;
         int averageHoleWidth = 3;
-        int holeWidthVariance = 2;
+        int holeWidthVariance = 1;
         float platformRate = 0.1;
         int averagePlatformWidth = 5;
         int platformWidthVariance = 3;
@@ -210,6 +210,7 @@ public:
     void SetPlayerXDirection(const Direction direction) {
         xDirection = direction;
     }
+    
     void SetPlayerYDirection(const Direction direction) {
         // TODO: This might be useful if he had a jetpack haha
         //yDirection = direction;
@@ -264,6 +265,10 @@ public:
     // Return the player's y-position
     float GetPlayerY(){
         return players[0]->GetPosition().y;
+    }
+    // Return X direction
+    Direction GetDirectionX(){
+        return xDirection;
     }
     // Update world map level
     bool UpdateLevel(const int row, const int column, const float playerX, const float playerY, const int maxLevel){
