@@ -289,6 +289,11 @@ public:
         return false;
     }
 
+    void RestartLevel (const float playerX, const float playerY){
+        players.clear();
+        CreatePlayer(playerX, playerY);
+    }
+
     ~World() {
         for(auto block : blocks) {
             

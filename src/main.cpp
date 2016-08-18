@@ -97,13 +97,21 @@ int main()
                 timeElapsed = 0;
                 world.SetPlayerYDirection(START_DIRECTION);
                 deltaX = world.UpdateWorld(clock.restart().asMilliseconds());
+                lastX = START_POSITION_X;
             } else {
                 win = true;
             }
         }
+
+        if (world.GetPlayerY() < 0){
+            world.RestartLevel(START_POSITION_X, START_POSITION_Y);
+            world.SetPlayerXDirection(START_DIRECTION);
+            deltaX = world.UpdateWorld(clock.restart().asMilliseconds());
+            timeElapsed = 0;
+            lastX = START_POSITION_X;
+        }
         auto worldMap = world.GetWorldMap();
         
-        //float x = world.GetPlayerX();
         float x = lastX + deltaX;
         float originalX = world.GetPlayerX();
         float y = world.GetPlayerY();
@@ -141,7 +149,6 @@ int main()
         if (timeElapsed <= 3000.0f){
             window.draw(text);
         } 
-        std::cout << win << std::endl;
         if (win){
             window.draw(wonText);
         }
