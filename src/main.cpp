@@ -126,7 +126,7 @@ int main()
         }
         lastX = x;
         squarePlayer.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
-        //float rangeLeft = x - 20.0f;
+        
         // Clear screen
         window.clear(sf::Color::White);
         // Draw the rectangle
