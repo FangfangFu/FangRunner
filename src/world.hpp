@@ -24,12 +24,14 @@ class MyQueryCallback : public b2QueryCallback {
 // A world map class
 class World {
 private:
+    std::vector<std::vector<std::vector<int>>> levelVectors;
     std::vector<std::vector<int>> worldVector;
     Direction xDirection;
     Direction yDirection;
     float mapWidth;
     float mapHeight;
     bool playerJump;
+    int level;
     
     // Simulated Physics
     b2World* world;
@@ -72,7 +74,60 @@ private:
         groundBody->CreateFixture(&groundBox, 0.0f);
         blocks.push_back(groundBody);
     }
-    
+    // Build the blocks and put the continuous blocks in same row into one box;
+    // Create the ground from the provided worldVector map
+    void BuildBlock(const int row, const int column){
+        for (int y = 0; y < row; ++y) {
+            int count = 0;
+            bool emptyBlock = false;
+            int boxWidth = 0;
+            int boxX = 0;
+            int boxY = 0;
+            for (int x = 0; x < column; ++x) {
+                if (worldVector[y][x] == 1) {
+                    ++count;
+                    
+                }else {
+                    emptyBlock = true;
+                    boxWidth = count;
+                    count = 0;
+                }
+
+                if(count == 1){
+                    boxX = x;
+                    boxY = y;
+                    emptyBlock = false;
+                }
+
+                if (emptyBlock == true and boxWidth != 0){
+                    BuildBox(boxX, boxY, boxWidth, world);
+                }
+            }
+
+            if (count > 0){
+                boxWidth = count;
+                BuildBox(boxX, boxY, boxWidth, world);
+            }
+
+        }
+    }
+    // Create player
+    CreatePlayer (const float playerX, const float playerY){
+        b2BodyDef bodyDef;
+        bodyDef.type = b2_dynamicBody;
+        bodyDef.position.Set(playerX, playerY);
+        b2Body* body = world->CreateBody(&bodyDef);
+        
+        b2PolygonShape dynamicBox;
+	    dynamicBox.SetAsBox(0.5f, 0.5f);
+        b2FixtureDef fixtureDef;
+	    fixtureDef.shape = &dynamicBox;
+        fixtureDef.density = 1.0f;
+        fixtureDef.friction = 2.9f;
+        body->CreateFixture(&fixtureDef);
+        
+        players.push_back(body);
+    }
     // worldVector creater
     std::vector<std::vector<int>> CreateWorld(const int startPlayerX, const int startPlayerY, const int width, const int height, const float holeRate, const int averageHoleWidth, const int holeWidthVariance, 
     const float platformRate, const int averagePlatformWidth, const int platformWidthVariance, const int averagePlatformHeight, const int platformHeightVariance) {
@@ -113,14 +168,27 @@ private:
 
 public:
     // Constuctor
-    World(const int row, const int column, const Direction direction, const float playerX, const float playerY) {
+    World(const int row, const int column, const Direction direction, const float playerX, const float playerY, const int maxLevel) {
         // Set time seed for generate random numbers
         srand(time(NULL));
+        level = 0; // game level
         // Initialize the 2D vector
         // Parameter: startPlayerX, startPlayerY, width, height, 
         // holeRate, averageHoleWidth, holeWidthVariance 
-        // platformRate, averageplatformWidth, platformWidthVariance, averagePlatformHeight, platformHeightVariance
-        worldVector = CreateWorld(static_cast<int>(playerX), static_cast<int>(playerY), column, row, 0.1, 3, 2, 0.1, 5, 3, 7, 4);
+        // platformRate, averagePlatformWidth, platformWidthVariance, averagePlatformHeight, platformHeightVariance
+        float holeRate = 0.1;
+        int averageHoleWidth = 3;
+        int holeWidthVariance = 2;
+        float platformRate = 0.1;
+        int averagePlatformWidth = 5;
+        int platformWidthVariance = 3;
+        int averagePlatformHeight = 7;
+        int platformHeightVariance = 4;
+        for (int i = 0; i < maxLevel; ++i){
+            levelVectors.push_back(CreateWorld(static_cast<int>(playerX), static_cast<int>(playerY), column, row, holeRate, averageHoleWidth, holeWidthVariance, 
+            platformRate, averagePlatformWidth, platformWidthVariance, averagePlatformHeight, platformHeightVariance));
+        }
+        worldVector = levelVectors[level];
 
         mapWidth = static_cast<float>(column);
         mapHeight = static_cast<float>(row);
@@ -132,55 +200,10 @@ public:
         
         // Build the blocks and put the continuous blocks in same row into one box;
         // Create the ground from the provided worldVector map
-        for (int y = 0; y < row; ++y) {
-            int count = 0;
-            bool emptyBlock = false;
-            int boxWidth = 0;
-            int boxX = 0;
-            int boxY = 0;
-            for (int x = 0; x < column; ++x) {
-                if (worldVector[y][x] == 1) {
-                    ++count;
-                    
-                }else {
-                    emptyBlock = true;
-                    boxWidth = count;
-                    count = 0;
-                }
-
-                if(count == 1){
-                    boxX = x;
-                    boxY = y;
-                    emptyBlock = false;
-                }
-
-                if (emptyBlock == true and boxWidth != 0){
-                    BuildBox(boxX, boxY, boxWidth, world);
-                }
-            }
-
-            if (count > 0){
-                boxWidth = count;
-                BuildBox(boxX, boxY, boxWidth, world);
-            }
-
-        }
+        BuildBlock (row, column);
 
         // Create player
-        b2BodyDef bodyDef;
-        bodyDef.type = b2_dynamicBody;
-        bodyDef.position.Set(playerX, playerY);
-        b2Body* body = world->CreateBody(&bodyDef);
-        
-        b2PolygonShape dynamicBox;
-	    dynamicBox.SetAsBox(0.5f, 0.5f);
-        b2FixtureDef fixtureDef;
-	    fixtureDef.shape = &dynamicBox;
-        fixtureDef.density = 1.0f;
-        fixtureDef.friction = 2.9f;
-        body->CreateFixture(&fixtureDef);
-        
-        players.push_back(body);
+        CreatePlayer (playerX, playerY);
     }
     
     // Set up player direction function 
@@ -228,6 +251,7 @@ public:
         world->Step(static_cast<float>(timeElapsed)/1000.0f, 6, 2);
         float deltaX = GetPlayerX() - oldX;
         return deltaX;
+        
     }
     // Return a 2D world map
     const std::vector<std::vector<int>>& GetWorldMap(){
@@ -240,6 +264,29 @@ public:
     // Return the player's y-position
     float GetPlayerY(){
         return players[0]->GetPosition().y;
+    }
+    // Update world map level
+    bool UpdateLevel(const int row, const int column, const float playerX, const float playerY, const int maxLevel){
+        ++level;
+        if (level < maxLevel){
+            worldVector = levelVectors[level];  
+            delete world;
+            playerJump = false;
+            players.clear();
+            
+            // Create physics world
+            b2Vec2 gravity(0.0f, -50.0f);
+            world = new b2World(gravity);
+            
+            // Build the blocks and put the continuous blocks in same row into one box;
+            // Create the ground from the provided worldVector map
+            BuildBlock (row, column);
+
+            // Create player
+            CreatePlayer (playerX, playerY);
+            return true;
+        }  
+        return false;
     }
 
     ~World() {

@@ -1,7 +1,10 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include "world.hpp"
+#include "string"
+#include <iostream>
 
+const int MAX_LEVEL = 2;
 const int ROW = 20;
 const int COLUMN = 400;
 const Direction START_DIRECTION = Direction::NONE;
@@ -12,6 +15,9 @@ const float RIGHTBOUNDARY = 22.0f; // Right boundary would become 55% of 40(the 
 // 1 unit is 16 pixel; 80x45
 int main()
 {
+    int level = 1;
+    int timeElapsed = 0;
+    bool win = false;
     // Create the main window
     sf::RenderWindow window(sf::VideoMode(1280, 768), "FangRunner Window");
     window.setFramerateLimit(144);
@@ -24,12 +30,24 @@ int main()
     // Create a red square player
     sf::RectangleShape squarePlayer(sf::Vector2f(32.0f, 32.0f));
     squarePlayer.setFillColor(sf::Color::Red);
+    // // Create a graphical text to display
+    sf::Font font;
+    if (!font.loadFromFile("../data/arial.ttf"))
+        return EXIT_FAILURE;
+    sf::Text text("Starting World " + std::to_string(level), font, 50);
+    text.setColor(sf::Color::Magenta);
+    text.setPosition(500.0f, 128.0f);
+    sf::Text wonText("You won!", font, 70);
+    wonText.setColor(sf::Color::Magenta);
+    wonText.setPosition(500.0f, 200.0f);
+
     // Declare the world
-    World world(ROW, COLUMN, START_DIRECTION, START_POSITION_X, START_POSITION_Y);
+    World world(ROW, COLUMN, START_DIRECTION, START_POSITION_X, START_POSITION_Y, MAX_LEVEL);
     sf::Clock clock;
+    sf::Clock time;
     // Record last loop's x position
     float lastX = START_POSITION_X;
-
+    
     while (window.isOpen())
     {
         sf::Event event;
@@ -69,6 +87,20 @@ int main()
 
         // Update the world for each loop
         float deltaX = world.UpdateWorld(clock.restart().asMilliseconds());
+        timeElapsed += time.restart().asMilliseconds();
+        // Update world level
+        if (world.GetPlayerX() >= COLUMN){
+            auto levelUp = world.UpdateLevel(ROW, COLUMN, START_POSITION_X, START_POSITION_Y, MAX_LEVEL);
+            if (levelUp){
+                ++level;
+                text.setString("Starting World " + std::to_string(level));
+                timeElapsed = 0;
+                world.SetPlayerYDirection(START_DIRECTION);
+                deltaX = world.UpdateWorld(clock.restart().asMilliseconds());
+            } else {
+                win = true;
+            }
+        }
         auto worldMap = world.GetWorldMap();
         
         //float x = world.GetPlayerX();
@@ -105,6 +137,14 @@ int main()
             }     
         }
         window.draw(squarePlayer);
+        // Draw the string
+        if (timeElapsed <= 3000.0f){
+            window.draw(text);
+        } 
+        std::cout << win << std::endl;
+        if (win){
+            window.draw(wonText);
+        }
         // Update the window
         window.display();
     }
