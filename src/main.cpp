@@ -6,7 +6,7 @@
 
 const int MAX_LEVEL = 2;
 const int ROW = 20;
-const int COLUMN = 40;
+const int COLUMN = 400;
 const Direction START_DIRECTION = Direction::NONE;
 const float START_POSITION_X = 18.0f;
 const float START_POSITION_Y = 10.0f;
@@ -167,15 +167,14 @@ int main()
                 win = true;
             }
         }
-        //Put player back to start in that level when it falls
-        if (world.GetPlayerY() < 0 and win == false){
+
+        if (world.GetPlayerY() < 0){
             world.RestartLevel(START_POSITION_X, START_POSITION_Y);
             world.SetPlayerXDirection(START_DIRECTION);
             deltaX = world.UpdateWorld(clock.restart().asMilliseconds());
             timeElapsed = 0;
             lastX = START_POSITION_X;
         }
-        
         auto worldMap = world.GetWorldMap();
         
         float x = lastX + deltaX;
@@ -192,8 +191,6 @@ int main()
         }
         lastX = x;
         
-
-        
         
         // Clear screen
         window.clear(sf::Color::White);
@@ -202,35 +199,27 @@ int main()
         // Draw the rectangle
         window.draw(rectangle);
         // Draw the map
-        if(!win){
-            for (int i = 0; i < ROW; ++i){
-                for (int n = 0; n < COLUMN; ++n){
-                    float squareGroundX = n;
-                    squareGroundX += x - originalX;
-                    if (squareGroundX > -1.0f and squareGroundX < 40.0f){
-                        if(worldMap[i][n] == 1){
-                            floorMiddle.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
-                            window.draw(floorMiddle);
-                        } else if (worldMap[i][n] == 3){
-                            floorRight.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
-                            window.draw(floorRight);
-                        } else if (worldMap[i][n] == -3){
-                            floorLeft.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
-                            window.draw(floorLeft);
-                        } else if(worldMap[i][n] == 2){
-                            platformMiddle.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
-                            window.draw(platformMiddle);
-                        }
+        for (int i = 0; i < 20; ++i){
+            for (int n = 0; n < 400; ++n){
+                float squareGroundX = n;
+                squareGroundX += x - originalX;
+                if (squareGroundX > -1.0f and squareGroundX < 40.0f){
+                    if(worldMap[i][n] == 1){
+                        floorMiddle.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
+                        window.draw(floorMiddle);
+                    } else if(worldMap[i][n] == 2){
+                        platformMiddle.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
+                        window.draw(platformMiddle);
                     }
-                }     
-            }
-            if (world.GetDirectionX() == Direction::LEFT){
-                pigPlayerLeft.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
-                window.draw(pigPlayerLeft);
-            } else {
-                pigPlayerRight.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
-                window.draw(pigPlayerRight);
-            }
+                }
+            }     
+        }
+        if (world.GetDirectionX() == Direction::LEFT){
+            pigPlayerLeft.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
+            window.draw(pigPlayerLeft);
+        } else {
+            pigPlayerRight.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
+            window.draw(pigPlayerRight);
         }
         // Draw the string
         if (timeElapsed <= 3000.0f){
