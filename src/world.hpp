@@ -84,9 +84,8 @@ private:
             int boxX = 0;
             int boxY = 0;
             for (int x = 0; x < column; ++x) {
-                if (worldVector[y][x] == 1 or worldVector[y][x] == 2) {
-                    ++count;
-                    
+                if (worldVector[y][x] == 1 or worldVector[y][x] == 2 or worldVector[y][x] == 3 or worldVector[y][x] == -3) {
+                    ++count; 
                 }else {
                     emptyBlock = true;
                     boxWidth = count;
@@ -129,13 +128,16 @@ private:
         players.push_back(body);
     }
     // worldVector creater
+    // floor middle: 1; floor right corner: 3; left corner: -3; platform middle: 2; right edge: 4; left edge: -4
     std::vector<std::vector<int>> CreateWorld(const int startPlayerX, const int startPlayerY, const int width, const int height, const float holeRate, const int averageHoleWidth, const int holeWidthVariance, 
     const float platformRate, const int averagePlatformWidth, const int platformWidthVariance, const int averagePlatformHeight, const int platformHeightVariance) {
         std::vector<std::vector<int>> createdVector;
         createdVector = std::vector<std::vector<int>>(height, std::vector<int>(width, 0) );
-        for (int i = 0; i < width; ++i){
+        for (int i = 1; i < width - 1; ++i){
             createdVector[0][i] = 1;    
         }
+        
+        createdVector[0][width - 1] = 3;
         for (int i = startPlayerX - 2; i < startPlayerX + 3; ++i){
             createdVector[startPlayerY - 2][i] = 2;
         }
@@ -147,7 +149,19 @@ private:
             int actualHoleWidth = rand() % (2 * holeWidthVariance + 1) + (averageHoleWidth - holeWidthVariance);
             for (int m = 0; m < actualHoleWidth; ++m){
                 createdVector[0][holePosition + m] = 0;
-            }      
+            }
+            if (holePosition != 0){
+                createdVector[0][holePosition - 1] = 3;
+            }
+            if (holePosition + actualHoleWidth < width){
+                createdVector[0][holePosition + actualHoleWidth] = -3;
+            }   
+        }
+        if (createdVector[0][0] = 1){
+            createdVector[0][0] = -3;
+        }
+        if (createdVector[0][width - 1] =1){
+            createdVector[0][width -1] = 3;
         }
 
         int platformNum = width * platformRate;
