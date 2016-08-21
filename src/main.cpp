@@ -12,6 +12,12 @@ const float START_POSITION_X = 18.0f;
 const float START_POSITION_Y = 10.0f;
 const float LEFTBOUNDARY = 18.0f; // 45% boundary on both sides 
 const float RIGHTBOUNDARY = 22.0f; // Right boundary would become 55% of 40(the window width)
+
+void DrawTile(sf::Sprite& sprite, sf::RenderWindow& window, float x, float y) {
+    sprite.setPosition(x * 32.0f, (23.0f-y) * 32.0f);
+    window.draw(sprite);
+}
+
 // 1 unit is 16 pixel; 80x45
 int main()
 {
@@ -66,7 +72,7 @@ int main()
         return EXIT_FAILURE;
     } 
     sf::Sprite floorMiddle(floorMiddleTexture);
-    floorMiddle.setScale(0.125f, 0.2162f);
+    floorMiddle.setScale(0.125f*2.0f, 0.2162f);
     // Create the floor left corner
     sf::Texture floorLeftTexture;
     if (!floorLeftTexture.loadFromFile("../data/floor_left_corner.png")){
@@ -88,7 +94,7 @@ int main()
         return EXIT_FAILURE;
     } 
     sf::Sprite platformMiddle(platformMiddleTexture);
-    platformMiddle.setScale(0.125f, 0.2162f);
+    platformMiddle.setScale(0.125f*2.0f, 0.2162f);
     // Create the floor left corner
     sf::Texture platformLeftTexture;
     if (!platformLeftTexture.loadFromFile("../data/left_edge.png")){
@@ -200,16 +206,36 @@ int main()
         window.draw(rectangle);
         // Draw the map
         for (int i = 0; i < 20; ++i){
+            bool startingCornerIsOddX = false;
             for (int n = 0; n < 400; ++n){
                 float squareGroundX = n;
                 squareGroundX += x - originalX;
                 if (squareGroundX > -1.0f and squareGroundX < 40.0f){
-                    if(worldMap[i][n] == 1){
-                        floorMiddle.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
-                        window.draw(floorMiddle);
-                    } else if(worldMap[i][n] == 2){
-                        platformMiddle.setPosition(squareGroundX * 32.0f, (23.0f-i) * 32.0f);
-                        window.draw(platformMiddle);
+                    if (worldMap[i][n] != 0) {
+                        // Ground present
+                        if (n == 0 or (n > 0 and worldMap[i][n-1] == 0)) {
+                            // Left corner
+                            startingCornerIsOddX = n % 2 == 1;
+                            if (i == 0) {
+                                DrawTile(floorLeft, window, squareGroundX, i);
+                            } else {
+                                DrawTile(platformLeft, window, squareGroundX, i);
+                            }
+                        } else if (n == 400-1 or (n < 400-1 and worldMap[i][n+1] == 0)) {
+                            // right corner
+                            if (i == 0) {
+                                DrawTile(floorRight, window, squareGroundX, i);
+                            } else {
+                                DrawTile(platformRight, window, squareGroundX, i);
+                            }
+                        } else if ((startingCornerIsOddX and n % 2 == 0) or (!startingCornerIsOddX and n % 2 != 0)) {
+                            // Middle
+                            if (i == 0) {
+                                DrawTile(floorMiddle, window, squareGroundX, i);
+                            } else {
+                                DrawTile(platformMiddle, window, squareGroundX, i);
+                            }
+                        }
                     }
                 }
             }     

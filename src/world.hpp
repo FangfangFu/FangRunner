@@ -128,6 +128,7 @@ private:
         
         players.push_back(body);
     }
+
     // worldVector creater
     std::vector<std::vector<int>> CreateWorld(const int startPlayerX, const int startPlayerY, const int width, const int height, const float holeRate, const int averageHoleWidth, const int holeWidthVariance, 
     const float platformRate, const int averagePlatformWidth, const int platformWidthVariance, const int averagePlatformHeight, const int platformHeightVariance) {
@@ -163,6 +164,33 @@ private:
                 }
             }
         }
+
+        // Go through each row and make sure the length of each sequence of blocks is an even count
+        for (int y = 0; y < height; ++y) {
+            int blockCount = 0;
+            for (int x = 0; x < width; ++x) {
+                if (createdVector[y][x] != 0) {
+                    ++blockCount;
+                } else {
+                    // Reached end of blocks, make sure the count is even, else adjust
+                    if (blockCount % 2 != 0) {
+                        // Odd number of blocks in sequence
+                        if (x == 1) {
+                            // One block on left side of map, remove it
+                            createdVector[y][0] = 0;
+                        } else if (x == width - 1) {
+                            // At the end of the map, so just remove block
+                            createdVector[y][width-1] = 0;
+                        } else {
+                            // Just shorten the length of the ground by 1 block
+                            createdVector[y][x-1] = 0;
+                        }
+                    }
+                    blockCount = 0;
+                }
+            }
+        }
+
         return createdVector;
     }
 
@@ -300,9 +328,6 @@ public:
     }
 
     ~World() {
-        for(auto block : blocks) {
-            
-        }
         delete world;
     }
 };
