@@ -174,7 +174,7 @@ int main()
             }
         }
 
-        if (world.GetPlayerY() < 0){
+        if (world.GetPlayerY() < 0 and win == false){
             world.RestartLevel(START_POSITION_X, START_POSITION_Y);
             world.SetPlayerXDirection(START_DIRECTION);
             deltaX = world.UpdateWorld(clock.restart().asMilliseconds());
@@ -205,9 +205,9 @@ int main()
         // Draw the rectangle
         window.draw(rectangle);
         // Draw the map
-        for (int i = 0; i < 20; ++i){
+        for (int i = 0; i < ROW; ++i){
             bool startingCornerIsOddX = false;
-            for (int n = 0; n < 400; ++n){
+            for (int n = 0; n < COLUMN; ++n){
                 float squareGroundX = n;
                 squareGroundX += x - originalX;
                 if (squareGroundX > -1.0f and squareGroundX < 40.0f){
@@ -221,7 +221,7 @@ int main()
                             } else {
                                 DrawTile(platformLeft, window, squareGroundX, i);
                             }
-                        } else if (n == 400-1 or (n < 400-1 and worldMap[i][n+1] == 0)) {
+                        } else if (n == COLUMN-1 or (n < COLUMN-1 and worldMap[i][n+1] == 0)) {
                             // right corner
                             if (i == 0) {
                                 DrawTile(floorRight, window, squareGroundX, i);

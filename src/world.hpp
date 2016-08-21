@@ -171,6 +171,10 @@ private:
             for (int x = 0; x < width; ++x) {
                 if (createdVector[y][x] != 0) {
                     ++blockCount;
+                    if (x == width - 1 and blockCount % 2 != 0) {
+                        // At the end of the map, so just remove block
+                        createdVector[y][width-1] = 0;
+                    }
                 } else {
                     // Reached end of blocks, make sure the count is even, else adjust
                     if (blockCount % 2 != 0) {
@@ -178,9 +182,6 @@ private:
                         if (x == 1) {
                             // One block on left side of map, remove it
                             createdVector[y][0] = 0;
-                        } else if (x == width - 1) {
-                            // At the end of the map, so just remove block
-                            createdVector[y][width-1] = 0;
                         } else {
                             // Just shorten the length of the ground by 1 block
                             createdVector[y][x-1] = 0;
