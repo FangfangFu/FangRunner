@@ -46,6 +46,7 @@ int main()
     pigPlayerRight.setOrigin(16.0f, 16.0f);
     sf::Sprite pigPlayerLeft(playerTexture);
     pigPlayerLeft.setScale(0.057658f, 0.085333f);
+    pigPlayerRight.setOrigin(160.0f*3.2f, 0.0f);
     pigPlayerLeft.scale(-1.0f,1.0f);
     // Create a graphical text to display
     sf::Font font;
@@ -115,7 +116,7 @@ int main()
     sf::Clock time;
     // Record last loop's x position
     float lastX = START_POSITION_X;
-    
+    bool turnBack = false;
     while (window.isOpen())
     {
         sf::Event event;
@@ -147,10 +148,10 @@ int main()
         
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
             world.SetPlayerXDirection(Direction::LEFT);
-            //pigPlayer.setTextureRect(sf::IntRect(32.0f, 0, -32.0f, 32.0f));
+            turnBack = true;
         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
             world.SetPlayerXDirection(Direction::RIGHT);
-            //pigPlayer.scale(-1.0f, 1.0f);
+            turnBack = false;
         } else {
             world.SetPlayerXDirection(Direction::NONE);
         }
@@ -240,11 +241,12 @@ int main()
                 }
             }     
         }
-        if (world.GetDirectionX() == Direction::LEFT){
-            pigPlayerLeft.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
+        // Checking if there is turning
+        if (turnBack == true){
+            pigPlayerLeft.setPosition(x * 32.0f + 16.0f, (23-y) * 32.0f);
             window.draw(pigPlayerLeft);
         } else {
-            pigPlayerRight.setPosition(x * 32.0f - 16.0f, (23-y) * 32.0f);
+            pigPlayerRight.setPosition(x * 32.0f + 16.0f, (23-y) * 32.0f);
             window.draw(pigPlayerRight);
         }
         // Draw the string
