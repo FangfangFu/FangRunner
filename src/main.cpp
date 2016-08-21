@@ -14,8 +14,10 @@ const float LEFTBOUNDARY = 18.0f; // 45% boundary on both sides
 const float RIGHTBOUNDARY = 22.0f; // Right boundary would become 55% of 40(the window width)
 
 void DrawTile(sf::Sprite& sprite, sf::RenderWindow& window, float x, float y) {
-    sprite.setPosition(x * 32.0f, (23.0f-y) * 32.0f);
-    window.draw(sprite);
+    if (x > -2.0f and x < 40.0f){
+        sprite.setPosition(x * 32.0f, (23.0f-y) * 32.0f);
+        window.draw(sprite);
+    }
 }
 
 // 1 unit is 16 pixel; 80x45
@@ -211,7 +213,7 @@ int main()
             for (int n = 0; n < COLUMN; ++n){
                 float squareGroundX = n;
                 squareGroundX += x - originalX;
-                if (squareGroundX > -1.0f and squareGroundX < 40.0f){
+                
                     if (worldMap[i][n] != 0) {
                         // Ground present
                         if (n == 0 or (n > 0 and worldMap[i][n-1] == 0)) {
@@ -238,7 +240,7 @@ int main()
                             }
                         }
                     }
-                }
+                
             }     
         }
         // Checking if there is turning
